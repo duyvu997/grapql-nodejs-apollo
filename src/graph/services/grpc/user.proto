@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package sample; // Replace with your desired package name
+
+service KafkaProducer {
+  // Method to produce a message to Kafka
+  rpc produceMessage(Message) returns (MessageResponse);
+}
+
+// Request message for producing a message to Kafka
+message Message {
+  string topic = 1;
+  bytes key = 2;
+  bytes value = 3;
+}
+
+// Response message for producing a message to Kafka
+message MessageResponse {
+  bool success = 1;
+  string message = 2;
+}

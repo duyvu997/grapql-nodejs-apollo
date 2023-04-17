@@ -7,13 +7,18 @@ type Book {
   author: String
 }
 
-type AddBookMutationResponse {
-  code: String!
-  success: Boolean!
-  message: String!
-  book: Book
+type User {
+  username: String
+  email: String
+  password: String
+}
+
+type CreateUserMutationResponse {
+  uid: String
+  username: String
+  createdAt: String
 }
 
 type Mutation {
-  addBook(title: String, author: String): AddBookMutationResponse
+  createUser(email: String, username: String, password: String): CreateUserMutationResponse
 }
