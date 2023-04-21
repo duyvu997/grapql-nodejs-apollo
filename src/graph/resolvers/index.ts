@@ -1,4 +1,4 @@
-import createUser from './createUser';
+// import createUser from './createUser';
 
 const books = [
   {
@@ -13,7 +13,7 @@ const books = [
 
  const resolvers: any  = {
   Mutation: {
-    createUser
+    // create/User
   },
   Query: {
     books: () => books,

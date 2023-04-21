@@ -1,4 +1,4 @@
-import createUser from './createUser';
+// import createUser from './createUser';
 const books = [
     {
         title: 'The Awakening',
@@ -11,7 +11,7 @@ const books = [
 ];
 const resolvers = {
     Mutation: {
-        createUser
+    // create/User
     },
     Query: {
         books: () => books,

@@ -1,6 +1,17 @@
 import express from 'express';
-import { ApolloServer } from 'apollo-server-express';
-import resolvers from './graph/resolvers/index';
+import { produceKafkaMessage } from './graph/services/kafka/kafkaClient.js';
+import { ApolloServer } from '@apollo/server';
+import { startStandaloneServer } from '@apollo/server/standalone';
+const books = [
+  {
+    title: 'The Awakening',
+    author: 'Kate Chopin',
+  },
+  {
+    title: 'City of Glass',
+    author: 'Paul Auster',
+  },
+];
 
 const typeDefs = `#graphql
 type Query {
@@ -29,21 +40,33 @@ type Mutation {
 }
 `;
 
+const resolvers: any = {
+  Mutation: {
+    createUser: (root: any, params: any) => {
+      console.log(root, params);
+      return new Promise((resolve: any, reject: any) => {
+        produceKafkaMessage('localhostt:9092', 'topic:createUser');
+      });
+    },
+  },
+  Query: {
+    books: () => books,
+  },
+};
+
+interface MyContext {
+  token?: String;
+}
+
 async function startApolloServer() {
   const app = express();
 
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
+  const server = new ApolloServer<MyContext>({ typeDefs, resolvers });
+  const { url } = await startStandaloneServer(server, {
+    context: async ({ req }) => ({ token: req.headers.token }),
+    listen: { port: 4000 },
   });
-
-  await server.start();
-
-  server.applyMiddleware({ app });
-
-  app.listen({ port: 4000 }, () =>
-    console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
-  );
+  console.log(`🚀  Server ready at ${url}`);
 }
 
 startApolloServer().catch((err) => {

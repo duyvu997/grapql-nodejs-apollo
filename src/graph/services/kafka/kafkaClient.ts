@@ -1,8 +1,9 @@
 import * as grpc from 'grpc';
 import * as protoLoader from '@grpc/proto-loader';
+import * as path from 'path';
 
-
-const PROTO_PATH = '../grpc/user.proto'; 
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const PROTO_PATH = path.join(__dirname, '..', 'grpc', 'user.proto'); 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH);
 const kafkaProto: any = grpc.loadPackageDefinition(packageDefinition).sample; 
 
@@ -14,7 +15,7 @@ function createKafkaConsumerClient(endpoint: string): any {
   return new kafkaProto.KafkaProducer(endpoint, grpc.credentials.createInsecure());
 }
 
-function produceKafkaMessage(endpoint: string, request: any): Promise<any> {
+export function produceKafkaMessage(endpoint: string, request: any): Promise<any> {
   return new Promise((resolve, reject) => {
     const kafkaProducerClient = createKafkaProducerClient(endpoint);
     kafkaProducerClient.produceMessage(request, (error:any, response:any) => {
@@ -29,7 +30,7 @@ function produceKafkaMessage(endpoint: string, request: any): Promise<any> {
   });
 }
 
-function consumeKafkaMessage(endpoint: string, topic: string) {
+export function consumeKafkaMessage(endpoint: string, topic: string) {
   const kafkaConsumerClient = createKafkaConsumerClient(endpoint);
   const stream = kafkaConsumerClient.consumeMessage({ topic });
 
@@ -50,11 +51,6 @@ function consumeKafkaMessage(endpoint: string, topic: string) {
   }
 
   return { close };
-}
-
-export default {
-  consumeKafkaMessage,
-  produceKafkaMessage
 }
 
 // Test client function

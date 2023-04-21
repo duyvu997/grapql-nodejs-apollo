@@ -1,15 +1,17 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import express from 'express';
-import { ApolloServer } from 'apollo-server-express';
-import resolvers from './graph/resolvers/index';
+import { produceKafkaMessage } from './graph/services/kafka/kafkaClient.js';
+import { ApolloServer } from '@apollo/server';
+import { startStandaloneServer } from '@apollo/server/standalone';
+const books = [
+    {
+        title: 'The Awakening',
+        author: 'Kate Chopin',
+    },
+    {
+        title: 'City of Glass',
+        author: 'Paul Auster',
+    },
+];
 const typeDefs = `#graphql
 type Query {
   books: [Book]
@@ -36,17 +38,27 @@ type Mutation {
   createUser(email: String, username: String, password: String): CreateUserMutationResponse
 }
 `;
-function startApolloServer() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const app = express();
-        const server = new ApolloServer({
-            typeDefs,
-            resolvers,
-        });
-        yield server.start();
-        server.applyMiddleware({ app });
-        app.listen({ port: 4000 }, () => console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`));
+const resolvers = {
+    Mutation: {
+        createUser: (root, params) => {
+            console.log(root, params);
+            return new Promise((resolve, reject) => {
+                produceKafkaMessage('localhostt:9092', 'topic:createUser');
+            });
+        },
+    },
+    Query: {
+        books: () => books,
+    },
+};
+async function startApolloServer() {
+    const app = express();
+    const server = new ApolloServer({ typeDefs, resolvers });
+    const { url } = await startStandaloneServer(server, {
+        context: async ({ req }) => ({ token: req.headers.token }),
+        listen: { port: 4000 },
     });
+    console.log(`🚀  Server ready at ${url}`);
 }
 startApolloServer().catch((err) => {
     console.error('Failed to start Apollo Server:', err);
