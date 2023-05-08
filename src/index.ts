@@ -45,7 +45,10 @@ const resolvers: any = {
     createUser: (root: any, params: any) => {
       console.log(root, params);
       return new Promise((resolve: any, reject: any) => {
-        produceKafkaMessage('0.0.0.0:9092', 'topic_createUser');
+        //TODO: init request based on proto file. exp: SendMessageRequest
+        // add topic into SendMessageRequest
+        const request = {}
+        produceKafkaMessage('0.0.0.0:9092', request);
       });
     },
   },

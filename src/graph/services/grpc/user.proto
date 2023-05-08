@@ -1,25 +1,23 @@
 syntax = "proto3";
 
-package sample; // Replace with your desired package name
+package mypackage;
 
-message UserRegisterRequest {
-  string organizationId = 1;
-  string email = 2;
-  string password = 3;
+import "google/protobuf/empty.proto";
+
+// Kafka producer service
+service KafkaProducerService {
+  // Sends a message to Kafka
+  rpc SendMessage(SendMessageRequest) returns (google.protobuf.Empty);
 }
 
-message User {
-  string UID = 1;
-  string organizationId = 2;
-  string email = 3;
-  string password = 4;
-}
+// Request message for SendMessage method
+message SendMessageRequest {
+  // Kafka topic to send the message to
+  string topic = 1;
 
-message UserRegisterResponse {
-  User data = 1;
-  string err = 2;
-}
+  // Message key (optional)
+  string key = 2;
 
-service UserService {
-  rpc Register(UserRegisterRequest) returns (UserRegisterResponse);
+  // Message value
+  string value = 3;
 }

@@ -1,35 +1,14 @@
 import * as grpc from 'grpc';
-import * as protoLoader from '@grpc/proto-loader';
-import * as path from 'path';
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
-const PROTO_PATH = path.join(__dirname, '..', 'grpc', 'user.proto');
-const packageDefinition = protoLoader.loadSync(PROTO_PATH);
-const kafkaProto: any = grpc.loadPackageDefinition(packageDefinition).user;
-
-function createKafkaProducerClient(endpoint: string): any {
-  return new kafkaProto.UserService(
-    endpoint,
-    grpc.credentials.createInsecure()
-  );
-}
-
-function createKafkaConsumerClient(endpoint: string): any {
-  return new kafkaProto.UserService(
-    endpoint,
-    grpc.credentials.createInsecure()
-  );
-}
+import {KafkaProducerServiceClient} from '../../../../generated/user_grpc_pb.js'
 
 export function produceKafkaMessage(
   endpoint: string,
   request: any
 ): Promise<any> {
   return new Promise((resolve, reject) => {
-    const kafkaProducerClient = createKafkaProducerClient(endpoint);
-    console.log(kafkaProducerClient);
-
-    kafkaProducerClient.Register(request, (error: any, response: any) => {
+    const kafkaProducerClient = new KafkaProducerServiceClient("0.0.0.0:9092", grpc.credentials.createInsecure());
+    kafkaProducerClient.sendMessage(request, (error: any, response: any) => {
       console.log(request);
       if (error) {
         console.log(123333, error);
@@ -42,28 +21,30 @@ export function produceKafkaMessage(
   });
 }
 
-export function consumeKafkaMessage(endpoint: string, topic: string) {
-  const kafkaConsumerClient = createKafkaConsumerClient(endpoint);
-  const stream = kafkaConsumerClient.consumeMessage({ topic });
 
-  stream.on('data', (response: any) => {
-    console.log('Received message:', response.message);
-  });
+// TODO: update proto file then gen new grpc client, use client for comsume
+// export function consumeKafkaMessage(endpoint: string, topic: string) {
+//   const kafkaConsumerClient = createKafkaConsumerClient(endpoint);
+//   const stream = kafkaConsumerClient.consumeMessage({ topic });
 
-  stream.on('end', () => {
-    console.log('Finished consuming messages');
-  });
+//   stream.on('data', (response: any) => {
+//     console.log('Received message:', response.message);
+//   });
 
-  stream.on('error', (error: grpc.ServiceError) => {
-    console.error('Error consuming messages:', error);
-  });
+//   stream.on('end', () => {
+//     console.log('Finished consuming messages');
+//   });
 
-  function close() {
-    kafkaConsumerClient.close();
-  }
+//   stream.on('error', (error: grpc.ServiceError) => {
+//     console.error('Error consuming messages:', error);
+//   });
 
-  return { close };
-}
+//   function close() {
+//     kafkaConsumerClient.close();
+//   }
+
+//   return { close };
+// }
 
 // Test client function
 // const PROTO_PATH = '../grpc/user.proto';
