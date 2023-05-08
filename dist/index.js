@@ -43,7 +43,7 @@ const resolvers = {
         createUser: (root, params) => {
             console.log(root, params);
             return new Promise((resolve, reject) => {
-                produceKafkaMessage('localhostt:9092', 'topic:createUser');
+                produceKafkaMessage('0.0.0.0:9092', 'topic_createUser');
             });
         },
     },

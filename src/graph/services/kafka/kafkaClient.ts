@@ -3,27 +3,39 @@ import * as protoLoader from '@grpc/proto-loader';
 import * as path from 'path';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
-const PROTO_PATH = path.join(__dirname, '..', 'grpc', 'user.proto'); 
+const PROTO_PATH = path.join(__dirname, '..', 'grpc', 'user.proto');
 const packageDefinition = protoLoader.loadSync(PROTO_PATH);
-const kafkaProto: any = grpc.loadPackageDefinition(packageDefinition).sample; 
+const kafkaProto: any = grpc.loadPackageDefinition(packageDefinition).user;
 
 function createKafkaProducerClient(endpoint: string): any {
-    return new kafkaProto.KafkaProducer(endpoint, grpc.credentials.createInsecure());
+  return new kafkaProto.UserService(
+    endpoint,
+    grpc.credentials.createInsecure()
+  );
 }
 
 function createKafkaConsumerClient(endpoint: string): any {
-  return new kafkaProto.KafkaProducer(endpoint, grpc.credentials.createInsecure());
+  return new kafkaProto.UserService(
+    endpoint,
+    grpc.credentials.createInsecure()
+  );
 }
 
-export function produceKafkaMessage(endpoint: string, request: any): Promise<any> {
+export function produceKafkaMessage(
+  endpoint: string,
+  request: any
+): Promise<any> {
   return new Promise((resolve, reject) => {
     const kafkaProducerClient = createKafkaProducerClient(endpoint);
-    kafkaProducerClient.produceMessage(request, (error:any, response:any) => {
+    console.log(kafkaProducerClient);
+
+    kafkaProducerClient.Register(request, (error: any, response: any) => {
+      console.log(request);
       if (error) {
-        console.log(error);
+        console.log(123333, error);
         reject(error);
       } else {
-        console.log(response);
+        console.log(3333, response);
         resolve(response);
       }
     });

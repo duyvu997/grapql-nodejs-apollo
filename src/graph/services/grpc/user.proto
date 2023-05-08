@@ -2,20 +2,24 @@ syntax = "proto3";
 
 package sample; // Replace with your desired package name
 
-service KafkaProducer {
-  // Method to produce a message to Kafka
-  rpc produceMessage(Message) returns (MessageResponse);
+message UserRegisterRequest {
+  string organizationId = 1;
+  string email = 2;
+  string password = 3;
 }
 
-// Request message for producing a message to Kafka
-message Message {
-  string topic = 1;
-  bytes key = 2;
-  bytes value = 3;
+message User {
+  string UID = 1;
+  string organizationId = 2;
+  string email = 3;
+  string password = 4;
 }
 
-// Response message for producing a message to Kafka
-message MessageResponse {
-  bool success = 1;
-  string message = 2;
+message UserRegisterResponse {
+  User data = 1;
+  string err = 2;
+}
+
+service UserService {
+  rpc Register(UserRegisterRequest) returns (UserRegisterResponse);
 }
